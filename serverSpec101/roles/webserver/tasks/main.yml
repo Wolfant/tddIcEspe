@@ -1,0 +1,38 @@
+---
+# tasks file for webserver
+- name: Install Software for webserver
+  become_user: root
+  become: yes
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+      - httpd
+      - mod_ssl
+      - crypto-utils
+  ignore_errors: yes
+  tags:
+    - install
+
+- name: Copy Httpd config file
+  template:
+    src: templates/httpd.conf
+    dest: /etc/httpd/conf/httpd.conf
+  become: true
+  notify:
+    - restart apache
+  tags:
+    - install
+    - config
+
+- name: Active httpd on Boot
+  become_user: root
+  become: yes
+  service:
+    name: "{{ item }}"
+    enabled: yes
+  with_items:
+      - httpd
+  tags:
+    - install
+    - enable
